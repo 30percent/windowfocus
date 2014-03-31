@@ -1,0 +1,80 @@
+#! /usr/bin/env python
+#coding=utf-8
+
+import threading, socket, select, time
+import errno
+
+GLOBALINT = 1
+
+class ClientSocket(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        print "Made"
+    def run(self):
+        print "Here"
+        ip = '127.0.0.1'
+        port = 50004
+        buffer = 1024
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((ip, port))
+        i = 10
+        while (i > -2):
+            data = s.recv(buffer)
+            print "Received: ", data, " ", i
+            i = i - 1
+        s.close()
+
+class ServerSocket(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._stop = threading.Event()
+        
+    def run(self):
+        ip = '127.0.0.1'
+        port = 50004
+        buffer = 1024
+        s = self.s
+        s.bind((ip, port))
+        s.listen(1)
+        
+        data = "GLOBALINT"
+        self._stop.clear()
+        t = self._stop.is_set()
+        while not self._stop.is_set():
+            t = self._stop.is_set()
+            print t, " is the Set\n"
+            rr, rw, err = select.select([s],[],[],1)
+            if rr:
+                conn, addr = s.accept()
+                print 'Connection address:', addr
+                while 1:
+                    try:
+                        conn.send(str(GLOBALINT) + "_") #sending stream
+                    except socket.error, e:
+                        break
+                conn.close()
+    def stop(self):
+        print "Ask to stop"
+        self._stop.set()
+
+
+backgroundServ = ServerSocket()
+backgroundServ.start()
+
+backgroundCli = ClientSocket()
+backgroundCli.start()
+print 'The main program continues to run in foreground.'
+while GLOBALINT < 10:
+    GLOBALINT = GLOBALINT + 1
+    time.sleep(.1)
+backgroundCli.join()    # Wait for the background task to finish
+backgroundCli = ClientSocket()
+backgroundCli.start()
+backgroundCli.join()
+print 'First Client has ended. Sending stop command'
+backgroundServ.stop()
+backgroundServ.join()
+
+print 'Main program waited until background was done.'
