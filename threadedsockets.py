@@ -48,7 +48,7 @@ class ServerSocket(threading.Thread):
     def run(self):
         ip = '127.0.0.1'
         port = 50004
-        buffer = 1024
+        buffer = 50
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((ip, port))
@@ -67,8 +67,35 @@ class ServerSocket(threading.Thread):
                 conn.send(data) #echo
             conn.close()
 
+    def end(self):
+        running = False
 
-backgroundCli = ClientSocket()
+class Frame(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.ip = '127.0.0.1'
+        self.port = 50004
+        self.buffer = 50
+
+    def run(self):
+        ip = self.ip
+        port = self.port
+        buffer = self.buffer
+        
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((ip, port))
+        i = 10
+        while (i > -2):
+            message = str(i)
+            print "Send: ", message
+            s.send(message)
+            data = s.recv(buffer)
+            print "Received: ", data
+            i = i - 1
+        s.close()        
+    
+
+backgroundCli = Frame()
 backgroundServ = ServerSocket()
 backgroundCli.start()
 backgroundServ.start()
@@ -77,7 +104,7 @@ print 'The main program continues to run in foreground.'
 backgroundCli.join()    # Wait for the background task to finish
 
 print 'First Client has ended. Sending stop command'
-StopServ()
+backgroundServ.end()
 backgroundServ.join()
 
 print 'Main program waited until background was done.'
