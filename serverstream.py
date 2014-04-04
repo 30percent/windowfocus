@@ -11,23 +11,19 @@ deq.extend([random.randint(0,5) for r in xrange(20)])
 class ClientSocket(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        print "Made"
     def run(self):
-        print "Here"
         ip = '127.0.0.1'
         port = 50004
         buffer = 1024
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((ip, port))
-        i = 10
+        i = 50
         while (i > -2):
             data = s.recv(buffer)
             int_lst = [int(x) for x in filter(None, data.split("_"))]
-            print "Received: "
-            print int_lst
             deq.extend(int_lst)
-            i = i - 1
+            i -= 1
         s.close()
 
 class HandleStream(threading.Thread):
@@ -46,8 +42,7 @@ class HandleStream(threading.Thread):
         av = s/20
         count = collections.Counter(deq)
         mo = next(iter(next(iter(count.most_common(1))))) #get mode
-        print deq
-        print "Mode: ", mo
+        print "\nMode: ", mo
     
     def stop(self):
         self._stop.set()    
@@ -61,7 +56,6 @@ class StreamChange(threading.Thread):
             glob = random.randint(0,5)
             time.sleep(.1)
         
-
 class ServerSocket(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -77,16 +71,14 @@ class ServerSocket(threading.Thread):
         s.bind((ip, port))
         s.listen(1)
         
-        data = "glob"
         self._stop.clear()
         t = self._stop.is_set()
         while not self._stop.is_set():
             t = self._stop.is_set()
-            print t, " is the Set\n"
             rr, rw, err = select.select([s],[],[],1)
             if rr:
                 conn, addr = s.accept()
-                print 'Connection address:', addr
+                print '\nConnection address:', addr
                 while 1:
                     try:
                         conn.send(str(glob) + "_") #sending stream
@@ -95,7 +87,7 @@ class ServerSocket(threading.Thread):
                         break
                 conn.close()
     def stop(self):
-        print "Ask to stop"
+        print "Server asked to stop"
         self._stop.set()
 
 
@@ -109,13 +101,17 @@ hst.start()
 
 backgroundCli = ClientSocket()
 backgroundCli.start()
-print 'The main program continues to run in foreground.'
+#print 'The main program continues to run in foreground.'
 
 backgroundCli.join()    # Wait for the background task to finish
 backgroundCli = ClientSocket()
 backgroundCli.start()
 backgroundCli.join()
-print 'First Client has ended. Sending stop command'
+#print 'First Client has ended. Sending stop command'
+time.sleep(2)
+b = ClientSocket()
+b.start()
+b.join()
 backgroundServ.stop()
 hst.compute()
 hst.stop()
