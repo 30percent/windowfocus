@@ -11,6 +11,7 @@ deq.extend([random.randint(0,5) for r in xrange(20)])
 class ClientSocket(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
+    
     def run(self):
         ip = '127.0.0.1'
         port = 50004
