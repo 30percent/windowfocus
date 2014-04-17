@@ -4,8 +4,9 @@
 import threading, socket, select, time
 import errno, random, collections
 
+MAXLEN=20
 glob = 1
-deq = collections.deque(maxlen=20)
+deq = collections.deque(maxlen=MAXLEN)
 deq.extend([random.randint(0,5) for r in xrange(20)])
 
 class ClientSocket(threading.Thread):
@@ -42,9 +43,10 @@ class HandleStream(threading.Thread):
         s = sum(deq)
         av = s/20
         count = collections.Counter(deq)
-        mo = next(iter(next(iter(count.most_common(1))))) #get mode
-        print "\nMode: ", mo
-    
+        it = next(iter(count.most_common(1)))
+        if(it[1] > (len(deq)/2)):
+            print "\nMode: ", it[0]
+        ##
     def stop(self):
         self._stop.set()    
 
