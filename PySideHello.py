@@ -65,5 +65,5 @@ def GuiStart(names):
 
 
 if __name__ == "__main__":
-    nameslist = ["Onedsaflkjd;lskajfl;kdjsa;lkjf;ldksajf;lkdjs;a", "Twodsaflkjd;lskajfl;kdjsa;lkjf;ldksajf;lkdjs;a", "Threedsaflkjd;lskajfl;kdjsa;lkjf;ldksajf;lkdjs;a", "Fourdsaflkjd;lskajfl;kdjsa;lkjf;ldksajf;lkdjs;a"]
+    nameslist = ["Window One", "Window Two", "Window Three", "Window Four"]
     GuiStart(nameslist)
